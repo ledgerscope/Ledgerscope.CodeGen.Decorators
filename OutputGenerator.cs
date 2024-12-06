@@ -69,9 +69,22 @@ namespace Ledgerscope.CodeGen.Decorators
                 if (member is IMethodSymbol { MethodKind: MethodKind.Ordinary } method)
                 {
 
+                    SimpleNameSyntax identifierName;
+                    if (method.TypeParameters.Any())
+                    {
+                        identifierName = SyntaxFactory.GenericName(SyntaxFactory.Identifier(method.Name))
+                            .AddTypeArgumentListArguments(method.TypeParameters.Select(tp => SyntaxFactory.IdentifierName(tp.Name)).ToArray());
+                    }
+                    else
+                    {
+                        identifierName = SyntaxFactory.IdentifierName(method.Name);
+                    }
+
                     var methodCall = SyntaxFactory.InvocationExpression(
-                        SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName(fieldName), SyntaxFactory.IdentifierName(method.Name)))
+                        SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName(fieldName), identifierName))
                         .AddArgumentListArguments(method.Parameters.Select(p => SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Name))).ToArray());
+
+
 
                     StatementSyntax statement;
                     if (method.ReturnType.SpecialType == SpecialType.System_Void)
