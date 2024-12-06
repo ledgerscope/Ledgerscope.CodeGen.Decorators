@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <LangVersion>9</LangVersion>
+        <Title>Ledgerscope.CodeGen.Decorators</Title>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.12.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>
