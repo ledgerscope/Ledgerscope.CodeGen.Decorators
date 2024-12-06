@@ -30,12 +30,14 @@ steps:
     inputs:
       command: 'build'
       projects: '**/*.csproj'
+      arguments: '--configuration $(BuildConfiguration)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Test'
     inputs:
       command: 'test'
       projects: '**/*.csproj'
+      arguments: '--configuration $(BuildConfiguration)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Pack'
@@ -43,6 +45,7 @@ steps:
       command: 'pack'
       packagesToPack: '**/Ledgerscope.CodeGen.Decorators.csproj'
       versioningScheme: 'byBuildNumber'
+      arguments: '--configuration $(BuildConfiguration)'
 
   - task: PublishBuildArtifacts@1
     displayName: Publish 'drop' artifacts
