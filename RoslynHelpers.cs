@@ -1,15 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace DecoratorGenerator
+namespace Ledgerscope.CodeGen.Decorators
 {
     internal static class RoslynHelpers
     {
-        public static IEnumerable<ISymbol> GetAllInterfaceMembers(this ITypeSymbol typeSymbol) {
+        public static IEnumerable<ISymbol> GetAllInterfaceMembers(this ITypeSymbol typeSymbol)
+        {
             foreach (var member in typeSymbol.GetMembers())
                 yield return member;
 
@@ -18,7 +17,8 @@ namespace DecoratorGenerator
                     yield return member;
         }
 
-        public static TypeSyntax ToTypeSyntax(this ITypeSymbol typeSymbol) {
+        public static TypeSyntax ToTypeSyntax(this ITypeSymbol typeSymbol)
+        {
             return SyntaxFactory.ParseTypeName(typeSymbol.ToDisplayString());
         }
     }
