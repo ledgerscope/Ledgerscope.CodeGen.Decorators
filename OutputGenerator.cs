@@ -26,13 +26,20 @@ namespace Ledgerscope.CodeGen.Decorators
             var modifier = SyntaxFacts.GetText(type.DeclaredAccessibility);
             var accessibilityModifier = SyntaxFactory.Token(SyntaxFacts.GetKeywordKind(modifier));
 
+            var classDeclaration = SyntaxFactory.ClassDeclaration(decoratorName)
+                    .AddModifiers(accessibilityModifier, SyntaxFactory.Token(SyntaxKind.AbstractKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword))
+                    .AddBaseListTypes(SyntaxFactory.SimpleBaseType(parsedType))
+                    .AddMembers(getField(parsedType, fieldName))
+                    .AddMembers(getConstructor(decoratorName, constructorParamName, parsedType, fieldName))
+                    .AddMembers(getMembers(type, fieldName).ToArray());
+
+            if (type.TypeParameters.Any())
+            {
+                classDeclaration = classDeclaration.AddTypeParameterListParameters(type.TypeParameters.Select(tp => SyntaxFactory.TypeParameter(tp.Name)).ToArray());
+            }
+
             return SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(type.ContainingNamespace.ToDisplayString()))
-                .AddMembers(SyntaxFactory.ClassDeclaration(decoratorName)
-                .AddModifiers(accessibilityModifier, SyntaxFactory.Token(SyntaxKind.AbstractKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword))
-                .AddBaseListTypes(SyntaxFactory.SimpleBaseType(parsedType))
-                .AddMembers(getField(parsedType, fieldName))
-                .AddMembers(getConstructor(decoratorName, constructorParamName, parsedType, fieldName))
-                .AddMembers(getMembers(type, fieldName).ToArray()));
+                .AddMembers(classDeclaration);
         }
 
         private static FieldDeclarationSyntax getField(TypeSyntax typeSyntax, string fieldName)
@@ -76,10 +83,17 @@ namespace Ledgerscope.CodeGen.Decorators
                         statement = SyntaxFactory.ReturnStatement(methodCall);
                     }
 
-                    yield return SyntaxFactory.MethodDeclaration(method.ReturnType.ToTypeSyntax(), method.Name)
+                    var methodDeclaration = SyntaxFactory.MethodDeclaration(method.ReturnType.ToTypeSyntax(), method.Name)
                         .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.VirtualKeyword))
                         .AddParameterListParameters(method.Parameters.Select(p => SyntaxFactory.Parameter(SyntaxFactory.Identifier(p.Name)).WithType(p.Type.ToTypeSyntax())).ToArray())
                         .WithBody(SyntaxFactory.Block(statement));
+
+                    if (method.TypeParameters.Any())
+                    {
+                        methodDeclaration = methodDeclaration.AddTypeParameterListParameters(method.TypeParameters.Select(tp => SyntaxFactory.TypeParameter(tp.Name)).ToArray());
+                    }
+
+                    yield return methodDeclaration;
 
                 }
                 else if (member is IPropertySymbol property)
