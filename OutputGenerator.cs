@@ -36,6 +36,15 @@ namespace Ledgerscope.CodeGen.Decorators
             if (type.TypeParameters.Any())
             {
                 classDeclaration = classDeclaration.AddTypeParameterListParameters(type.TypeParameters.Select(tp => SyntaxFactory.TypeParameter(tp.Name)).ToArray());
+
+                foreach (var tp in type.TypeParameters)
+                {
+                    var clause = tp.GetTypeParameterConstraintClauses();
+                    if (clause.Length != 0)
+                    {
+                        classDeclaration = classDeclaration.AddConstraintClauses(clause);
+                    }
+                }
             }
 
             return SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(type.ContainingNamespace.ToDisplayString()))
@@ -84,8 +93,6 @@ namespace Ledgerscope.CodeGen.Decorators
                         SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName(fieldName), identifierName))
                         .AddArgumentListArguments(method.Parameters.Select(p => SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Name))).ToArray());
 
-
-
                     StatementSyntax statement;
                     if (method.ReturnType.SpecialType == SpecialType.System_Void)
                     {
@@ -104,6 +111,15 @@ namespace Ledgerscope.CodeGen.Decorators
                     if (method.TypeParameters.Any())
                     {
                         methodDeclaration = methodDeclaration.AddTypeParameterListParameters(method.TypeParameters.Select(tp => SyntaxFactory.TypeParameter(tp.Name)).ToArray());
+
+                        foreach (var tp in method.TypeParameters)
+                        {
+                            var clause = tp.GetTypeParameterConstraintClauses();
+                            if (clause.Length != 0)
+                            {
+                                methodDeclaration = methodDeclaration.AddConstraintClauses(clause);
+                            }
+                        }
                     }
 
                     yield return methodDeclaration;
