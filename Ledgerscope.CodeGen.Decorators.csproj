@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
 
