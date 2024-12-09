@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
@@ -17,46 +16,22 @@ namespace Ledgerscope.CodeGen.Decorators
         {
             var classDeclarations = context.SyntaxProvider.ForAttributeWithMetadataName(attributeName,
                 predicate: static (_, _) => true,
-                transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx))
-            .Where(static m => m is not null);
+                transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx));
 
-            static NamespaceDeclarationSyntax GetSemanticTargetForGeneration(GeneratorAttributeSyntaxContext context)
+            static InterfaceRecord GetSemanticTargetForGeneration(GeneratorAttributeSyntaxContext context)
             {
                 var interfaceDeclarationSyntax = (InterfaceDeclarationSyntax)context.TargetNode;
-                return OutputGenerator.GenerateOutputs(context.SemanticModel.GetDeclaredSymbol(interfaceDeclarationSyntax));
+                return new InterfaceRecord() { Syntax = interfaceDeclarationSyntax, SemanticModel = context.SemanticModel };
             }
 
-            IncrementalValueProvider<(Compilation, ImmutableArray<NamespaceDeclarationSyntax>)> compilationAndClasses
-                = context.CompilationProvider.Combine(classDeclarations.Collect());
-
-            context.RegisterSourceOutput(compilationAndClasses,
-                static (spc, source) => Execute(source.Item1, source.Item2, spc));
+            context.RegisterSourceOutput(classDeclarations, Execute);
         }
 
-        private static void Execute(Compilation compilation, ImmutableArray<NamespaceDeclarationSyntax> classes, SourceProductionContext context)
+        private static void Execute(SourceProductionContext context, InterfaceRecord interfaceRecord)
         {
-            if (classes.IsDefaultOrEmpty)
-            {
-                // nothing to do yet
-                return;
-            }
+            var namespaceDeclaration = OutputGenerator.GenerateOutputs(interfaceRecord.SemanticModel.GetDeclaredSymbol(interfaceRecord.Syntax));
 
-            var distinctClasses = classes.Distinct();
-
-            foreach (var namespaceDeclaration in distinctClasses)
-            {
-                context.AddSource("Decorator." + namespaceDeclaration.ChildNodes().OfType<ClassDeclarationSyntax>().First().Identifier.ToString() + ".g.cs", SourceText.From(namespaceDeclaration.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
-            }
-
-            //var p = new Parser(compilation, context.ReportDiagnostic, context.CancellationToken);
-
-            //IReadOnlyList<LoggerClass> logClasses = p.GetLogClasses(distinctClasses);
-            //if (logClasses.Count > 0) {
-            //    var e = new Emitter();
-            //    string result = e.Emit(logClasses, context.CancellationToken);
-
-            //    context.AddSource("LoggerMessage.g.cs", SourceText.From(result, Encoding.UTF8));
-            //}
+            context.AddSource("Decorator." + namespaceDeclaration.ChildNodes().OfType<ClassDeclarationSyntax>().First().Identifier.ToString() + ".g.cs", SourceText.From(namespaceDeclaration.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
         }
     }
 }
