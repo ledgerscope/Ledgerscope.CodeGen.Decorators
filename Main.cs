@@ -11,29 +11,18 @@ namespace Ledgerscope.CodeGen.Decorators
     [Generator]
     public class Main : IIncrementalGenerator
     {
+        private static readonly string attributeName = typeof(DecorateAttribute).FullName;
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var classDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
-                predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
+            var classDeclarations = context.SyntaxProvider.ForAttributeWithMetadataName(attributeName,
+                predicate: static (_, _) => true,
                 transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx))
             .Where(static m => m is not null);
 
-            static bool IsSyntaxTargetForGeneration(SyntaxNode node)
+            static NamespaceDeclarationSyntax GetSemanticTargetForGeneration(GeneratorAttributeSyntaxContext context)
             {
-                if (node is InterfaceDeclarationSyntax m)
-                {
-                    if (m.AttributeLists.Any(a => a.Attributes.Any(b => b.Name.ToString() == "Decorate")))
-                    {
-                        return true;
-                    }
-                    //=> node is InterfaceDeclarationSyntax m && m.AttributeLists.Any(a => a.Attributes.Any(b => b.Name.ToString() == nameof(DecorateAttribute)));
-                }
-                return false;
-            }
-
-            static NamespaceDeclarationSyntax GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
-            {
-                var interfaceDeclarationSyntax = (InterfaceDeclarationSyntax)context.Node;
+                var interfaceDeclarationSyntax = (InterfaceDeclarationSyntax)context.TargetNode;
                 return OutputGenerator.GenerateOutputs(context.SemanticModel.GetDeclaredSymbol(interfaceDeclarationSyntax));
             }
 
