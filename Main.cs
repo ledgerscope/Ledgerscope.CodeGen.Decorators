@@ -15,7 +15,7 @@ namespace Ledgerscope.CodeGen.Decorators
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var classDeclarations = context.SyntaxProvider.ForAttributeWithMetadataName(attributeName,
-                predicate: static (_, _) => true,
+                predicate: static (_, _) => true, // ForAttributeWithMetadataName already filters by attribute name
                 transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx));
 
             static InterfaceRecord GetSemanticTargetForGeneration(GeneratorAttributeSyntaxContext context)

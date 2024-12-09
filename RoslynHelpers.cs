@@ -48,7 +48,7 @@ namespace Ledgerscope.CodeGen.Decorators
                 clauses.Add(SyntaxFactory.ClassOrStructConstraint(SyntaxKind.StructConstraint));
             }
 
-            if (clauses.Any())
+            if (clauses.Count != 0)
                 return new[] { SyntaxFactory.TypeParameterConstraintClause(typeParameterSymbol.Name).AddConstraints(clauses.ToArray()) };
 
             return Array.Empty<TypeParameterConstraintClauseSyntax>();
